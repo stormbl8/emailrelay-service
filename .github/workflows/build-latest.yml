@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
   push:
     tags:
-      - 'v*'               # Triggers on version tags like v1.2.3
+      - 'v*'               # Trigger on version tags like v1.2.3
     branches:
       - '*'                # Trigger on all branches
     paths-ignore:
@@ -14,7 +14,7 @@ on:
 jobs:
   build-push-latest:
     runs-on: ubuntu-latest
-    environment: docker-publish  # Optional: use if you store secrets in environments
+    environment: docker-publish
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -40,6 +40,8 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v5
         with:
+          context: ./image
+          file: ./image/Dockerfile
           platforms: linux/amd64,linux/arm64
           push: true
           cache-from: type=gha,ref=stormbl8/emailrelay
