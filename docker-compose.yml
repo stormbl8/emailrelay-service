@@ -1,0 +1,60 @@
+version: '3.9'
+volumes:
+  emailrelay-spool: 
+services:
+  emailrelay:
+    image: stormbl8/emailrelay
+    # This service offers a store-and-forward proxy for emails. Possible use cases are:
+    # - Easily disable emails in test environments
+    # - limit the rate of emails per minute
+    # - use an external email server
+    # See http://emailrelay.sourceforge.net/index.html#reference_md_Command_line_usage
+    command:
+    # Common command line options
+    - "--forward-to ${RELAY_SMTP_HOST}:${RELAY_SMTP_PORT}"
+    - "--anonymous" # This avoid adding extra email headers
+    - "--client-tls" # This supports sending to servers with STARTTLS
+    # SMTP-Authentication requires the following option and the auth-file to be mounten (see below in the volumes section)
+    - "--client-auth=/emailrelay_client_auth"
+    # NOTE: Only one of the following use case must be uncommented at a time)
+    # Default use case "Send and retry" (This send emails directly and retries on failures after 180sec)
+    #- "--forward-on-disconnect"
+    #- "--poll=180"
+    # Use case "disable sending emails" (NOTE: You must also comment out the volume that stores emails)
+    # - "--forward-on-disconnect"
+    # - "--client-filter=exit:100"
+    # Use case "limit rate of sending emails" (NOTE: Only 1 email is sent every '--poll=x' seconds)
+    - "--poll=1"
+    - "--client-filter=exit:102"
+    # Additional helpful command line options
+    - "--verbose" # more info in logfiles
+    #- "--server-auth=/emailrelay_server_auth" # require login to emailrelay in case your app is easier to configure that way
+    expose:
+    - 25
+    ports:
+    - '25:25'
+    environment:
+      RELAY_SMTP_HOST: ${RELAY_SMTP_HOST}
+      RELAY_SMTP_PORT: ${RELAY_SMTP_PORT}
+    volumes:
+      # This volume stores emails.
+      # NOTE: To disable sending e-mails you must comment-out this volume,
+      # otherwise all emails will be sent when when you re-enable sending emails
+      - emailrelay-spool:/var/spool/emailrelay
+      # The 'client_auth' contains login and password for the email server:
+      # The file 'emailrelay_client_auth' must contain on line like the folowing:
+      # client LOGIN username password
+      # where 'username' and 'password' must be xtext-encoded (see RFC 1891 page 5, https://tools.ietf.org/html/rfc1891)
+      # if your password includes 'special' characters, 
+      # including space, plus (+), hash (#), or equals (=), or equals (/), or any accented or non-ascii characters, 
+      # then you need to replace those characters with "+20", "+2B", "+23", "+3D", "+2F" etc.
+      # For example, "my password" should be stored as "my+20password" in the emailrelay secrets file.
+      - ./emailrelay-config/emailrelay_client_auth:/emailrelay_client_auth
+      # Similar file if your application logs in to SMTP server
+      - ./emailrelay-config/emailrelay_server_auth:/emailrelay_server_auth
+    logging:
+      options:
+        max-file: '10'
+        max-size: 400k
+    mem_limit: 64M
+    restart: always

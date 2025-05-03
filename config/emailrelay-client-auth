@@ -1,0 +1,14 @@
+# emailrelay secrets file
+### Emailrelay for SMTP server @ TM Mittelstand 
+# Plain password should be in xtext encoded format (defined in RFC-1891) (space should be as +20, + as +2B, ## as +23, = as +3D, / as +2F)
+# http://emailrelay.sourceforge.net/index.html#reference_md_Authentication
+### uncomment the following and set correct password for '@domain.com' sender address
+#client LOGIN name@domain.com _xtext_encoded_password_
+
+### Emailrelay for SMTP server @ Amazon (domain.com)
+# Plain password should be in xtext encoded format (defined in RFC-1891) (space should be as +20, + as +2B, ## as +23, = as +3D, / as +2F)
+# http://emailrelay.sourceforge.net/index.html#reference_md_Authentication
+### uncomment the following and set correct password for '@domain.com' sender addresses
+### This are AWS_ACCESSKEY_ID and AWS_SECRET_ACCESSKEY of IAM user 'AnySESUser'
+#client LOGIN AWS_ACCESSKEY_ID _AWS_SECRET_ACCESSKEY_
+#EOF
