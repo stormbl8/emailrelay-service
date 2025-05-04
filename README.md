@@ -85,3 +85,10 @@ docker-compose run \
   -c 'echo "This is a test message." | swaks --to <to@mail.dev> --from <from@mail.dev> --server emailrelay --port 25'
 ```
 
+## Installation
+Once you adapt the environment variables then you can start with following:
+
+```bash
+. .env-local.sh
+docker-compose up -d
+```
