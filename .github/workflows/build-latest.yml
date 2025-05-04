@@ -60,7 +60,7 @@ jobs:
 
       - name: Install github-changelog-generator
         run: |
-          gem install github_changelog_generator
+          gem install github_changelog_generator --user-install
 
       - name: Generate changelog
         run: |
