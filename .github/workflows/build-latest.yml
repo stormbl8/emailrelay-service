@@ -4,9 +4,9 @@ on:
   workflow_dispatch:
   push:
     tags:
-      - 'v*'               # Trigger on version tags like v1.2.3
+      - 'v*'
     branches:
-      - '*'                # Trigger on all branches
+      - '*'
     paths-ignore:
       - LICENSE
       - docker-compose.yml
@@ -16,7 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     environment: docker-publish
     steps:
-      - name: Checkout
+      - name: Checkout code
         uses: actions/checkout@v4
 
       - name: Set up QEMU
@@ -37,7 +37,7 @@ jobs:
           TAG=${GITHUB_REF#refs/tags/}
           echo "tag=$TAG" >> $GITHUB_OUTPUT
 
-      - name: Build and push
+      - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
           context: ./image
@@ -58,27 +58,25 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
           repository: stormbl8/emailrelay
 
-      - name: Install github-changelog-generator
+      - name: Extract release notes from CHANGELOG.md
+        if: startsWith(github.ref, 'refs/tags/v')
+        id: changelog
         run: |
-          gem install github_changelog_generator --user-install
-    
-      - name: Add gem executable directory to PATH
-        run: |
-          echo "PATH=$HOME/.gem/ruby/2.7.0/bin:$PATH" >> $GITHUB_ENV
-      
-      - name: Generate Changelog
-        run: |
-          github_changelog_generator --future-release refs/heads/master --since-tag v0.0 --output CHANGELOG.md
-        
-
-      - name: Generate changelog
-        run: |
-          github_changelog_generator --future-release ${{ steps.meta.outputs.tag }} --since-tag v0.0 --output CHANGELOG.md
+          VERSION=${GITHUB_REF#refs/tags/}
+          echo "Looking for changelog entry for version $VERSION"
+          NOTES=$(awk -v version="$VERSION" '
+            $0 ~ "## \\[" version "\\]" {found=1; next}
+            found && /^## / {exit}
+            found {print}
+          ' CHANGELOG.md)
+          echo "RELEASE_NOTES<<EOF" >> $GITHUB_ENV
+          echo "$NOTES" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
 
       - name: Create GitHub Release
         if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v1
         with:
-          generate_release_notes: true
+          body: ${{ env.RELEASE_NOTES }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
