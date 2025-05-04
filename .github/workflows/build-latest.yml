@@ -67,8 +67,7 @@ jobs:
           ls -alh
 
       # Fetch release notes from CHANGELOG.md
-      - name: Fetch release notes from CHANGELOG.md
-        id: changelog
+      - name: Extract changelog entry for this version
         run: |
           VERSION=${GITHUB_REF#refs/tags/}
           if [[ "$VERSION" == "$GITHUB_REF" ]]; then
@@ -76,15 +75,17 @@ jobs:
             exit 0
           fi
           echo "Looking for changelog entry for version $VERSION"
-          
-          # Extract the changelog entry for the version from CHANGELOG.md
-          RELEASE_NOTES=$(awk -v version="$VERSION" '/## \['"$version"'\]/ {flag=1} flag && /^###/ {print; next} /##/ {flag=0}' CHANGELOG.md)
-          
+
+          # Extract the changelog entry for the version from docs/CHANGELOG.md
+          RELEASE_NOTES=$(awk -v version="$VERSION" '/## \['"$version"'\]/ {flag=1; next} flag && /^##/ {flag=0} flag {print}' docs/CHANGELOG.md)
+
           echo "Release notes for $VERSION:"
           echo "$RELEASE_NOTES"
-          
+
           # Store the release notes in GitHub environment variable for use in later steps
-          echo "release_notes=$RELEASE_NOTES" >> $GITHUB_ENV
+          echo "release_notes<<EOF" >> $GITHUB_ENV
+          echo "$RELEASE_NOTES" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
 
       # Update the DockerHub repository description with the release notes
       - name: Update DockerHub repo description
