@@ -2,6 +2,9 @@
 
 [![Docker Pulls](https://img.shields.io/docker/pulls/stormbl8/emailrelay)](https://hub.docker.com/r/stormbl8/emailrelay)
 [![GitHub tag](https://img.shields.io/github/v/tag/stormbl8/emailrelay-service)](https://github.com/stormbl8/emailrelay-service/tags)
+![GitHub last commit](https://img.shields.io/github/last-commit/stormbl8/emailrelay-service)
+![GitHub stars](https://img.shields.io/github/stars/stormbl8/emailrelay-service?style=social)
+![GitHub watchers](https://img.shields.io/github/watchers/stormbl8/emailrelay-service?style=social)
 
 Available Tags:
 
