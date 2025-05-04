@@ -55,7 +55,9 @@ jobs:
         run: |
           # Get the latest version from the tag and extract the changelog entry for it
           VERSION=${GITHUB_REF#refs/tags/}
-          RELEASE_NOTES=$(awk "/## \[$VERSION\]/ {flag=1} flag && /^###/ {print; next} /##/ {flag=0}" CHANGELOG.md)
+          echo "Looking for changelog entry for version $VERSION"
+          # Escape brackets for awk command and search for the tag in CHANGELOG.md
+          RELEASE_NOTES=$(awk -v version="$VERSION" '/## \[\Q'"$version"'\E\]/ {flag=1} flag && /^###/ {print; next} /##/ {flag=0}' CHANGELOG.md)
           echo "Release notes for $VERSION:"
           echo "$RELEASE_NOTES"
           echo "release_notes=$RELEASE_NOTES" >> $GITHUB_ENV
