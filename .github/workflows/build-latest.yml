@@ -61,6 +61,15 @@ jobs:
       - name: Install github-changelog-generator
         run: |
           gem install github_changelog_generator --user-install
+    
+      - name: Add gem executable directory to PATH
+        run: |
+          echo "PATH=$HOME/.gem/ruby/2.7.0/bin:$PATH" >> $GITHUB_ENV
+      
+      - name: Generate Changelog
+        run: |
+          github_changelog_generator --future-release refs/heads/master --since-tag v0.0 --output CHANGELOG.md
+        
 
       - name: Generate changelog
         run: |
