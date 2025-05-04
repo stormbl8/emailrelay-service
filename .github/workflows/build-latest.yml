@@ -68,7 +68,7 @@ jobs:
             $0 ~ "## \\[" version "\\]" {found=1; next}
             found && /^## / {exit}
             found {print}
-          ' CHANGELOG.md)
+          ' docs/CHANGELOG.md)
           echo "RELEASE_NOTES<<EOF" >> $GITHUB_ENV
           echo "$NOTES" >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
