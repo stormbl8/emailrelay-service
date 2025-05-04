@@ -15,7 +15,6 @@ jobs:
   build-push-latest:
     runs-on: ubuntu-latest
     environment: docker-publish
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -35,35 +34,10 @@ jobs:
       - name: Set version tag
         id: meta
         run: |
-          VERSION=${GITHUB_REF#refs/tags/}
-          if [[ "$VERSION" == "$GITHUB_REF" ]]; then
-            echo "Not a tag, defaulting to 'latest'"
-            echo "tag=latest" >> $GITHUB_OUTPUT
-          else
-            echo "tag=$VERSION" >> $GITHUB_OUTPUT
-          fi
+          TAG=${GITHUB_REF#refs/tags/}
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
 
-      - name: Install git-cliff
-        run: |
-          curl -sSL https://github.com/orhun/git-cliff/releases/latest/download/git-cliff-linux-x86_64.zip -o git-cliff.zip
-          unzip git-cliff.zip
-          sudo mv git-cliff /usr/local/bin/        
-
-      - name: Generate release notes with git-cliff
-        if: startsWith(github.ref, 'refs/tags/v')
-        run: |
-          VERSION=${GITHUB_REF#refs/tags/}
-          echo "Generating release notes for version $VERSION"
-
-          RELEASE_NOTES=$(git-cliff --tag "$VERSION" --strip all)
-          echo "Release notes for $VERSION:"
-          echo "$RELEASE_NOTES"
-
-          echo "release_notes<<EOF" >> $GITHUB_ENV
-          echo "$RELEASE_NOTES" >> $GITHUB_ENV
-          echo "EOF" >> $GITHUB_ENV
-
-      - name: Build and push Docker image
+      - name: Build and push
         uses: docker/build-push-action@v5
         with:
           context: ./image
@@ -74,7 +48,7 @@ jobs:
           cache-to: type=gha,ref=stormbl8/emailrelay,mode=max
           tags: |
             stormbl8/emailrelay:latest
-            ${{ steps.meta.outputs.tag != 'latest' && format('stormbl8/emailrelay:{0}', steps.meta.outputs.tag) || '' }}
+            ${{ startsWith(github.ref, 'refs/tags/v') && format('stormbl8/emailrelay:{0}', steps.meta.outputs.tag) || '' }}
 
       - name: Update DockerHub repo description
         if: github.ref == 'refs/heads/main'
@@ -84,10 +58,18 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
           repository: stormbl8/emailrelay
 
+      - name: Install github-changelog-generator
+        run: |
+          gem install github_changelog_generator
+
+      - name: Generate changelog
+        run: |
+          github_changelog_generator --future-release ${{ steps.meta.outputs.tag }} --since-tag v0.0 --output CHANGELOG.md
+
       - name: Create GitHub Release
         if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v1
         with:
-          body: ${{ env.release_notes }}
+          generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
