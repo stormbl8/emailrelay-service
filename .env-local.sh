@@ -3,7 +3,7 @@
 ## Standard docker-compose files to use (these must be exactly the same as in '.env')
 export COMPOSE_FILE=docker-compose.yml 
 ## Additional docker-compose file for 'emailrelay'
-export COMPOSE_FILE=$COMPOSE_FILE:docker-compose-custom_service_emailrelay.yml
+#export COMPOSE_FILE=$COMPOSE_FILE:docker-compose.yml
 
 ########################################################################################
 ##### Mandatory configuration
@@ -22,7 +22,7 @@ export SMTP_SECURITY='false'
 ### Emailrelay for SMTP server 
 ### check also correspding authentication in 'emailrelay_client_auth.example'
 export SMTP_FROM='noreply@domain.com'
-export RELAY_SMTP_HOST='smtp.domain.com' # You can use AWS SES , gmail or etc
+export RELAY_SMTP_HOST='email-smtp.eu-central-1.amazonaws.com' # You can use AWS SES , gmail or etc
 # Emailrelay configuration (common ports)
 export RELAY_SMTP_PORT=587
 # check
