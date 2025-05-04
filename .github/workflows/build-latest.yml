@@ -45,10 +45,9 @@ jobs:
 
       - name: Install git-cliff
         run: |
-          curl -sSL https://github.com/orhun/git-cliff/releases/latest/download/git-cliff-linux-x86_64.tar.gz -o git-cliff.tar.gz
-          tar -xf git-cliff.tar.gz
-          sudo mv git-cliff /usr/local/bin/
-          
+          curl -sSL https://github.com/orhun/git-cliff/releases/latest/download/git-cliff-linux-x86_64.zip -o git-cliff.zip
+          unzip git-cliff.zip
+          sudo mv git-cliff /usr/local/bin/        
 
       - name: Generate release notes with git-cliff
         if: startsWith(github.ref, 'refs/tags/v')
