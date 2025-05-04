@@ -42,6 +42,7 @@ RUN apk add --update --no-cache \
     && mkdir -p "${SPOOL_DIR}"
 
 COPY run.sh /run.sh
+RUN chmod +x /run.sh
 
 ENTRYPOINT ["/usr/bin/dumb-init", "--", "/run.sh"]
 CMD []
