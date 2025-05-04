@@ -7,8 +7,8 @@ Available Tags:
 
 [List of all image tags](https://hub.docker.com/r/stormbl8/emailrelay/tags)
 
-- `latest`, `1.0`
-- `1.0`
+- `latest`, `v1.0`
+- `v1.0`
 
 Alpine based Docker image for E-MailRelay. You can find more on its [website](http://emailrelay.sourceforge.net).
 
@@ -28,44 +28,41 @@ Some usage examples are given in `docker-compose.yml`.
 
 Sample configuration for sending emails from your Gmail account.
 
-Add your credentials to `client-auth.txt`.
+Add your credentials to `emailrelay-client-auth`.
 
 ```
 client plain example@gmail.com gmail-or-app-password
 ```
 
-Run the docker container
+### Example Usage with for AWS SES SMTP Service
 
-```bash
-docker run --rm \
-  -p "25:25" \
-  -v "$PWD/client-auth.txt:/client-auth.txt" \
-  stormbl8/emailrelay --forward-on-disconnect --forward-to smtp.gmail.com:587 --client-tls --client-auth=/client-auth.txt
+Sample configuration for sending emails from your Gmail account.
+
+Add your credentials to `emailrelay-client-auth`.
+
+```
+client plain AWS_ACCESSKEY_ID _AWS_SECRET_ACCESSKEY_
 ```
 
 ## Environment Variables
+adapt the following variables acording to your environment:
 
-### `DEFAULT_OPTS`
+```bash
 
-By default the following arguments are given on runtime. You can overwrite `DEFAULT_OPTS` environment variable to change or disable this behaviour.
+# Mandatory SMTP config
+export SMTP_HOST=emailrelay
+export SMTP_PORT=25
+export SMTP_USERNAME='username' # your choice
+export SMTP_PASSWORD='password' # your choice
+export SMTP_SECURITY='false'
 
-```text
---no-daemon --no-syslog --log --log-time --remote-clients
+# Email relay target (e.g., AWS SES, Gmail)
+export SMTP_FROM='noreply@domain.com'
+export RELAY_SMTP_HOST='email-smtp.eu-central-1.amazonaws.com' # this must be identical to what your aws location(s) 
+export RELAY_SMTP_PORT=587
 ```
 
-### `PORT`
-
-The port that E-MailRelay runs on. Default value is `25`. If you did TLS configuration you need to set this variable to `587` or something else.
-
-### `SPOOL_DIR`
-
-Spool directory for E-MailRelay. No need to change. Default value: `/var/spool/emailrelay`
-
-### `SWAKS_OPTS`
-
-This variable is used to give options to _swaks_, it is used on built-in health-check functionality. If you serve with TLS configuration you need to set this variable to `-tls`. Default value: _empty-string_
-
-## Filter Scripts, Client/Server Authentication, and Others
+## Client/Server Authentication
 
 Inside `config` directory you will find sample files for usage with filter functionality, SMTP client authentication and relay server authentication.
 
@@ -88,10 +85,3 @@ docker-compose run \
   -c 'echo "This is a test message." | swaks --to <to@mail.dev> --from <from@mail.dev> --server emailrelay --port 25'
 ```
 
-## Additions to `drdaeman/docker-emailrelay`
-
-- E-MailRelay version upgrade(s).
-- Smaller container images.
-- Included `bash` shell for further scripting.
-- Default TLS configuration is changed to insecure configuration.
-- Sample files for advanced configuration.
